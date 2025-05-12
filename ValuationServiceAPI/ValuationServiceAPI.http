@@ -1,0 +1,6 @@
+@ValuationServiceAPI_HostAddress = http://localhost:5255
+
+GET {{ValuationServiceAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
