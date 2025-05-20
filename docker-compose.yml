@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  valuationservice:
+    build:
+      context: .
+      dockerfile: ValuationServiceAPI/Dockerfile
+    container_name: valuationservice
+    ports:
+      - "5000:8080"
+    environment:
+      - MongoDb__ConnectionString=mongodb://mongo:27017
+      - RABBITMQ_HOST=rabbitmq
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      - mongo
+      - rabbitmq
+      - loki
+
+  mongo:
+    image: mongo
+    container_name: mongo
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  loki:
+    image: grafana/loki:2.9.4
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+
+  grafana:
+    image: grafana/grafana:10.2.2
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - loki
+
+volumes:
+  mongo-data:
