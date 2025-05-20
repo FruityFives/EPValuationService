@@ -24,19 +24,23 @@ namespace ValuationServiceAPI.Services
         }
 
         public async Task SendEffectAssessmentAsync(EffectAssessment assessment)
-{
-    var dto = new ItemAssessmentDTO
-    {
-        Title = assessment.ConditionReport.Title,
-        Picture = assessment.ConditionReport.Pictures.FirstOrDefault() ?? "",
-        Category = "TODO",
-        SellerId = assessment.ExpertId,
-        Effect = assessment // hele objektet indlejret
-    };
+        {
+            var dto = new ItemAssessmentDTO
+            {
+                Title = assessment.Title,
+                Picture = "", // valgfri, da du har fjernet ConditionReport
+                Category = "TODO",
+                SellerId = assessment.ExpertId,
+                AssessmentPrice = assessment.AssessmentPrice,
+                EffectId = assessment.EffectId
+            };
 
-    await _publisher.PublishAsync(dto);
-    _logger.LogInformation("DTO sendt til RabbitMQ med embedded EffectAssessment");
-}
+
+            await _publisher.PublishAsync(dto);
+            _logger.LogInformation("DTO sendt til RabbitMQ med AssessmentPrice og EffectId");
+        
 
     }
+
+}
 }

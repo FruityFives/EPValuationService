@@ -2,10 +2,11 @@ namespace ValuationServiceAPI.Models
 {
     public class EffectAssessment
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Title { get; set; } = string.Empty;
+        public Guid Id { get; set; } 
         public decimal AssessmentPrice { get; set; }
-        public ConditionReport ConditionReport { get; set; } = new();
-        public string ExpertId { get; set; } = string.Empty;
-        public string EffectId { get; set; } = string.Empty;
+       // public ConditionReport ConditionReport { get; set; } = new();
+        public Guid ExpertId { get; set; }
+        public Guid EffectId { get; set; } 
     }
 }

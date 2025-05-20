@@ -46,7 +46,7 @@ namespace ValuationServiceAPI.Test
             // Arrange: Lav en test-request
             var request = new ValuationRequest
             {
-                UserId = "user-001",
+                UserId = Guid.Parse("12345678-1234-1234-1234-123456789012"),
                 Description = "Test item",
                 Pictures = new List<string> { "http://test.com/pic.jpg" }
             };
@@ -74,18 +74,18 @@ namespace ValuationServiceAPI.Test
             // Arrange: Lav en EffectAssessment med data
             var assessment = new EffectAssessment
             {
-                Id = "effect-001",
-                ExpertId = "expert-123",
+                Id = Guid.Parse("12345678-1234-1234-1234-123456789012"),
+                ExpertId = Guid.Parse("expert-123"),
                 AssessmentPrice = 5000,
-                EffectId = "effect-001",
-                ConditionReport = new ConditionReport
+                EffectId = Guid.Parse("effect-123"),
+                /*ConditionReport = new ConditionReport
                 {
                     Title = "Test Title",
                     Description = "Test Desc",
                     Rating = 8,
                     Pictures = new List<string> { "http://test.com/pic.jpg" },
                     Date = System.DateTime.UtcNow
-                }
+                }*/
             };
 
 
@@ -96,8 +96,9 @@ namespace ValuationServiceAPI.Test
             _publisherMock.Verify(x => x.PublishAsync(It.Is<ItemAssessmentDTO>(dto =>
                 dto.Title == "Test Title" &&
                 dto.Picture == "http://test.com/pic.jpg" &&
-                dto.SellerId == "expert-123" &&
-                dto.Effect.Id == "effect-001"
+                dto.SellerId == Guid.Parse("expert-123") &&
+                dto.EffectId == Guid.Parse("effect-001")
+
             )), Times.Once);
 
             // Assert: Tjek at loggeren skrev en infolog

@@ -1,4 +1,4 @@
-namespace ValuationServiceAPI.Models
+/*namespace ValuationServiceAPI.Models
 {
     public class ConditionReport
     {
@@ -9,3 +9,4 @@ namespace ValuationServiceAPI.Models
         public DateTime Date { get; set; } = DateTime.UtcNow;
     }
 }
+*/

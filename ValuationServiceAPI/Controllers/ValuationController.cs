@@ -31,7 +31,7 @@ public async Task<IActionResult> SubmitValuation([FromBody] ValuationRequest req
 [HttpPost("effect-assessment")]
 public async Task<IActionResult> SubmitAssessment([FromBody] EffectAssessment assessment)
 {
-    _logger.LogInformation("📝 Modtog effect assessment med titel '{title}'", assessment.ConditionReport.Title);
+    _logger.LogInformation("📝 Modtog effect assessment med titel '{title}'", assessment.Id);
     await _service.SendEffectAssessmentAsync(assessment);
     return Ok("Assessment sent");
 }
