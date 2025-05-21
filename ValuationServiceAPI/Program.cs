@@ -24,6 +24,9 @@ try
     builder.Services.AddScoped<ValuationService>();
     builder.Services.AddSingleton<IRabbitMqPublisher, RabbitMqPublisher>();
 
+    // Sæt Mongo til at gemme GUIDs som string (i stedet for binary)
+    MongoDB.Bson.BsonDefaults.GuidRepresentationMode = MongoDB.Bson.GuidRepresentationMode.V3;
+
     var app = builder.Build();
 
     if (app.Environment.IsDevelopment())

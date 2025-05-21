@@ -9,5 +9,7 @@ namespace ValuationServiceAPI.Models
 
         public decimal AssessmentPrice { get; set; }
         public Guid EffectId { get; set; }
+
+      
     }
 }
