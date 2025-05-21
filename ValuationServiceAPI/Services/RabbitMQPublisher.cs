@@ -40,7 +40,7 @@ namespace ValuationServiceAPI.Services
                 body: body
             );
 
-            _logger.LogInformation("Published assessment with ID {id}", dto.EffectId);
+            _logger.LogInformation("Published assessment:", dto);
 
         }
     }

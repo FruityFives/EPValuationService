@@ -10,7 +10,7 @@ namespace ValuationServiceAPI.Models
         public decimal AssessmentPrice { get; set; }
         // public ConditionReport ConditionReport { get; set; } = new();
         [BsonRepresentation(BsonType.String)]
-        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid AssessmentId { get; set; } = Guid.NewGuid();
 
         [BsonRepresentation(BsonType.String)]
         public Guid ExpertId { get; set; }

@@ -8,6 +8,7 @@
     <FileVersion>1.0.1.1</FileVersion>
     <InformationalVersion>2.0.0</InformationalVersion>
     <Description> 
+      2.0.1 updated model and logic
       2.0.0 Added logic for RabbitMQ and MongoDB
       1.0.0 Updated with semantic versioning
       0.9.0 Dockerfile Service Added to App
