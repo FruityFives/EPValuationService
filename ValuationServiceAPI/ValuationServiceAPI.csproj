@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyVersion>1.0.1.1</AssemblyVersion>
     <FileVersion>1.0.1.1</FileVersion>
-    <InformationalVersion>2.0.1</InformationalVersion>
+    <InformationalVersion>2.1.1</InformationalVersion>
     <Description> 
       2.1.1 added collection to mongoDB 
       2.0.1 updated model and logic
