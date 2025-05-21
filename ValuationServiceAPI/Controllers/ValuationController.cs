@@ -20,7 +20,7 @@ public ValuationController(ValuationService service, ILogger<ValuationController
 
 
 
-       [HttpPost("valuation-request")]
+[HttpPost("valuation-request")]
 public async Task<IActionResult> SubmitValuation([FromBody] ValuationRequest request)
 {
     _logger.LogInformation("📩 Modtog valuation request fra bruger {userId}", request.UserId);
@@ -28,12 +28,25 @@ public async Task<IActionResult> SubmitValuation([FromBody] ValuationRequest req
     return Ok("Valuation saved");
 }
 
-[HttpPost("effect-assessment")]
-public async Task<IActionResult> SubmitAssessment([FromBody] EffectAssessment assessment)
-{
-    _logger.LogInformation("📝 Modtog effect assessment med titel '{title}'", assessment.Id);
-    await _service.SendEffectAssessmentAsync(assessment);
-    return Ok("Assessment sent");
-}
+        [HttpPost("effect-assessment")]
+        public async Task<IActionResult> SubmitAssessment([FromBody] EffectAssessment assessment)
+        {
+            _logger.LogInformation("📝 Modtog effect assessment med titel '{title}'", assessment.Title);
+
+            // Hent korrekt ValuationRequest via assessment.ValuationRequestId
+            var request = await _service.GetRequestByIdAsync(assessment.ValuationRequestId);
+
+            if (request == null)
+            {
+                _logger.LogWarning("ValuationRequest med ID {Id} blev ikke fundet", assessment.ValuationRequestId);
+                return NotFound("ValuationRequest ikke fundet.");
+            }
+
+            await _service.SendEffectAssessmentAsync(assessment, request);
+            return Ok("Assessment sent");
+        }
+
+
     }
 }
+

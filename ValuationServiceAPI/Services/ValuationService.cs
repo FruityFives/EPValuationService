@@ -23,24 +23,29 @@ namespace ValuationServiceAPI.Services
             _logger.LogInformation("ValuationRequest gemt med ID: {Id}", request.Id);
         }
 
-        public async Task SendEffectAssessmentAsync(EffectAssessment assessment)
+
+        public async Task<ValuationRequest?> GetRequestByIdAsync(Guid id)
         {
+            return await _valuationCollection.Find(r => r.Id == id).FirstOrDefaultAsync();
+        }
+
+
+        public async Task SendEffectAssessmentAsync(EffectAssessment assessment, ValuationRequest request)
+        {
+            // DTO konstrueres med data både fra EffectAssessment og ValuationRequest
             var dto = new ItemAssessmentDTO
             {
                 Title = assessment.Title,
-                Picture = "", // valgfri, da du har fjernet ConditionReport
+                Picture = request.Pictures.FirstOrDefault() ?? "", // Brug første billede fra ValuationRequest
                 Category = "TODO",
-                SellerId = assessment.ExpertId,
+                SellerId = request.UserId,                         // Sælgeren er brugeren der lavede valuation requesten
                 AssessmentPrice = assessment.AssessmentPrice,
-                EffectId = assessment.EffectId
             };
 
-
             await _publisher.PublishAsync(dto);
-            _logger.LogInformation("DTO sendt til RabbitMQ med AssessmentPrice og EffectId");
-        
+            _logger.LogInformation("DTO sendt til RabbitMQ med kobling til ValuationRequestId: {Id}", request.Id);
+        }
+
 
     }
-
-}
 }
