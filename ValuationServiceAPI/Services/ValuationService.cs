@@ -1,55 +1,72 @@
-using MongoDB.Driver;
+using ValuationServiceAPI.Repository;
 using ValuationServiceAPI.Models;
+using System.Xml;
 
-namespace ValuationServiceAPI.Services
+namespace ValuationServiceAPI.Services;
+
+public class ValuationService : IValuationService
 {
-    public class ValuationService
+    private readonly ILogger<ValuationService> _logger;
+    private readonly IRabbitMqPublisher _publisher;
+    private readonly IConditionReportPdfGenerator _pdfGenerator;
+    private readonly IValuationRepository _repository;
+
+    public ValuationService(
+        ILogger<ValuationService> logger,
+        IRabbitMqPublisher publisher,
+        IConditionReportPdfGenerator pdfGenerator,
+        IValuationRepository repository)
     {
-        private readonly IMongoCollection<ValuationRequest> _valuationCollection;
-        private readonly IMongoCollection<EffectAssessment> _assessmentCollection; // NYT
-        private readonly ILogger<ValuationService> _logger;
-        private readonly IRabbitMqPublisher _publisher;
+        _logger = logger;
+        _publisher = publisher;
+        _pdfGenerator = pdfGenerator;
+        _repository = repository;
+    }
 
-        public ValuationService(IMongoClient client, ILogger<ValuationService> logger, IRabbitMqPublisher publisher)
+    public async Task SubmitValuationRequest(ValuationRequest request)
+    {
+        await _repository.AddValuationRequestAsync(request);
+        _logger.LogInformation("ValuationRequest saved with ID: {Id}", request.Id);
+    }
+
+    public async Task SubmitFullAssessmentAsync(SubmitAssessmentDTO dto)
+    {
+        /* var report = dto.ConditionReport;
+
+        if (report.ConditionReportId == Guid.Empty)
         {
-            var database = client.GetDatabase("ValuationDB");
+            report.ConditionReportId = Guid.NewGuid();
+            _logger.LogWarning("Generated new ConditionReportId because it was missing.");
+        }*/
 
-            _valuationCollection = database.GetCollection<ValuationRequest>("ValuationRequests");
-            _assessmentCollection = database.GetCollection<EffectAssessment>("EffectAssessments"); // NYT
+        dto.ConditionReport.PdfUrl = _pdfGenerator.GeneratePdf(dto.ConditionReport);
 
-            _logger = logger;
-            _publisher = publisher;
-        }
+        await _repository.AddConditionReportAsync(dto.ConditionReport);
+        _logger.LogInformation("ConditionReport saved with ID: {Id}", dto.ConditionReport.ConditionReportId);
 
-        public async Task SubmitValuationRequest(ValuationRequest request)
+        var assessment = new Assessment
         {
-            await _valuationCollection.InsertOneAsync(request);
-            _logger.LogInformation("ValuationRequest gemt med ID: {Id}", request.Id);
-        }
+            Title = dto.Title,
+            AssessmentPrice = dto.AssessmentPrice,
+            ExpertId = dto.ExpertId,
+            ValuationRequestId = dto.ValuationRequestId,
+            ConditionReportId = dto.ConditionReport.ConditionReportId
+        };
 
-        public async Task<ValuationRequest?> GetRequestByIdAsync(Guid id)
+        await _repository.AddAssessmentAsync(assessment);
+        _logger.LogInformation("Assessment saved with ID: {Id}", assessment.AssessmentId);
+
+        var itemDto = new ItemAssessmentDTO
         {
-            return await _valuationCollection.Find(r => r.Id == id).FirstOrDefaultAsync();
-        }
+            Title = dto.Title,
+            Picture = dto.Picture,
+            Category = "TODO",
+            SellerId = dto.SellerId,
+            AssessmentPrice = dto.AssessmentPrice,
+            ConditionReportUrl = dto.ConditionReport.PdfUrl
+        };
 
-        public async Task SendEffectAssessmentAsync(EffectAssessment assessment, ValuationRequest request)
-        {
-            // Gem vurderingen i ny collection
-            await _assessmentCollection.InsertOneAsync(assessment);
-            _logger.LogInformation("EffectAssessment gemt med ID: {Id}", assessment.AssessmentId);
-
-            // DTO konstrueres med data både fra EffectAssessment og ValuationRequest
-            var dto = new ItemAssessmentDTO
-            {
-                Title = assessment.Title,
-                Picture = request.Pictures.FirstOrDefault() ?? "",
-                Category = "TODO",
-                SellerId = request.UserId,
-                AssessmentPrice = assessment.AssessmentPrice,
-            };
-
-            await _publisher.PublishAsync(dto);
-            _logger.LogInformation("DTO sendt til RabbitMQ med kobling til ValuationRequestId: {Id}", request.Id);
-        }
+        await _publisher.PublishAsync(itemDto);
+        _logger.LogInformation("Published item DTO to RabbitMQ");
     }
 }

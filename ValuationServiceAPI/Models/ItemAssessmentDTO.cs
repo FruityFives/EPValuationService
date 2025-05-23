@@ -1,3 +1,5 @@
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 namespace ValuationServiceAPI.Models
 {
     public class ItemAssessmentDTO
@@ -6,10 +8,8 @@ namespace ValuationServiceAPI.Models
         public string Picture { get; set; } = string.Empty;
         public string Category { get; set; } = "TODO";
         public Guid SellerId { get; set; }
-
         public decimal AssessmentPrice { get; set; }
-      
+        public string ConditionReportUrl { get; set; } = string.Empty;
 
-      
     }
 }

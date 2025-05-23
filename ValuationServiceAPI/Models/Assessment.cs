@@ -3,21 +3,18 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace ValuationServiceAPI.Models
 {
-    public class EffectAssessment
+    public class Assessment
     {
-        public string Title { get; set; } = string.Empty;
-       
-        public decimal AssessmentPrice { get; set; }
-        // public ConditionReport ConditionReport { get; set; } = new();
-        [BsonRepresentation(BsonType.String)]
+        [BsonId]
         public Guid AssessmentId { get; set; } = Guid.NewGuid();
+        public string Title { get; set; } = string.Empty;
+        public decimal AssessmentPrice { get; set; }
 
-        [BsonRepresentation(BsonType.String)]
+        public Guid ConditionReportId { get; set; } 
+
         public Guid ExpertId { get; set; }
 
-        [BsonRepresentation(BsonType.String)]
         public Guid ValuationRequestId { get; set; }
-
-
     }
+
 }
