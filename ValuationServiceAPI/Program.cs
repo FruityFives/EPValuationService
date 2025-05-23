@@ -17,7 +17,6 @@ builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddSingleton<IValuationRepository, ValuationRepository>();
 builder.Services.AddScoped<IValuationService, ValuationService>();
 builder.Services.AddScoped<IRabbitMqPublisher, RabbitMqPublisher>();
-builder.Services.AddScoped<IConditionReportPdfGenerator, ConditionReportPdfGenerator>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

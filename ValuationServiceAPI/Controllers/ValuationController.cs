@@ -30,13 +30,11 @@ namespace ValuationServiceAPI.Controllers
         }
 
         [HttpPost("effect-assessment")]
-        public async Task<IActionResult> SubmitAssessment([FromBody] SubmitAssessmentDTO dto)
+        public async Task<IActionResult> SubmitAssessment([FromBody] Assessment assessment)
         {
-            _logger.LogInformation("📝 Received assessment for '{Title}'", dto.Title);
-
-            await _service.SubmitFullAssessmentAsync(dto);
-
-            return Ok("Assessment and report submitted");
+            _logger.LogInformation("Received assessment for '{Title}'", assessment.Title);
+            await _service.SubmitFullAssessmentAsync(assessment);
+            return Ok("Assessment submitted successfully");
         }
 
     }

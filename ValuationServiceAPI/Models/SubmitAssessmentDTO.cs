@@ -11,7 +11,7 @@ namespace ValuationServiceAPI.Models
         public Guid ValuationRequestId { get; set; }
         public Guid SellerId { get; set; }
         public string Picture { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
 
-        public ConditionReport ConditionReport { get; set; } = new();
     }
 }
