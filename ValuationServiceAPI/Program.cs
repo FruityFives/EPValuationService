@@ -1,52 +1,37 @@
-using Microsoft.OpenApi.Models;
-using MongoDB.Driver;
-using Microsoft.AspNetCore.Builder;
 using ValuationServiceAPI.Services;
-using NLog;
+using ValuationServiceAPI.Repository;
 using NLog.Web;
+using QuestPDF.Infrastructure;
 
-var logger = LogManager.Setup().LoadConfigurationFromFile("NLog.config").GetCurrentClassLogger();
-logger.Debug("Starting ValuationService");
+Console.WriteLine("Starting ValuationServiceAPI...");
 
-try
+var logger = NLogBuilder.ConfigureNLog("NLog.config").GetCurrentClassLogger();
+var builder = WebApplication.CreateBuilder(args);
+
+QuestPDF.Settings.License = LicenseType.Community;
+
+builder.Logging.ClearProviders();
+builder.Host.UseNLog();
+
+builder.Services.AddSingleton<MongoDbContext>();
+builder.Services.AddSingleton<IValuationRepository, ValuationRepository>();
+builder.Services.AddScoped<IValuationService, ValuationService>();
+builder.Services.AddScoped<IRabbitMqPublisher, RabbitMqPublisher>();
+builder.Services.AddScoped<IConditionReportPdfGenerator, ConditionReportPdfGenerator>();
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
 {
-    var builder = WebApplication.CreateBuilder(args);
-
-    builder.Logging.ClearProviders();
-    builder.Host.UseNLog();
-
-    builder.Services.AddControllers();
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
-
-    builder.Services.AddSingleton<IMongoClient>(s =>
-        new MongoClient(builder.Configuration.GetConnectionString("MongoDb")));
-    builder.Services.AddScoped<ValuationService>();
-    builder.Services.AddSingleton<IRabbitMqPublisher, RabbitMqPublisher>();
-
-    // Sæt Mongo til at gemme GUIDs som string (i stedet for binary)
-    MongoDB.Bson.BsonDefaults.GuidRepresentationMode = MongoDB.Bson.GuidRepresentationMode.V3;
-
-    var app = builder.Build();
-
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-    }
-
-    app.UseAuthorization();
-    app.MapControllers();
-
-    app.Run();
-}
-catch (Exception ex)
-{
-    logger.Error(ex, "Stopped program because of exception");
-    throw;
-}
-finally
-{
-    LogManager.Shutdown();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
+app.UseAuthorization();
+app.MapControllers();
+
+app.Run();
