@@ -25,7 +25,7 @@ namespace ValuationServiceAPI.Services
             document.GeneratePdf(fullFilePath); // QuestPDF call
 
             // Return the relative URL for the API or frontend
-            return $"/files/condition-reports/{fileName}";
+            return $"/condition-reports/{fileName}";
         }
     }
 }
