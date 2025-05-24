@@ -19,7 +19,7 @@ namespace ValuationServiceAPI.Repository
             var connectionString = config["MONGODB_URI"] ?? "mongodb://mongo:27017";
             var dbName = config["VALUATION_DB_NAME"] ?? "ValuationDB";
 
-            logger.LogInformation("✅ Connected to database {Db}", dbName);
+            logger.LogInformation("Connected to database {Db}", dbName);
 
             BsonSerializer.RegisterSerializer(new GuidSerializer(BsonType.String));
             var client = new MongoClient(connectionString);

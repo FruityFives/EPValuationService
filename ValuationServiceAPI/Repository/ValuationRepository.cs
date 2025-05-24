@@ -58,5 +58,32 @@ namespace ValuationServiceAPI.Repository
                 throw;
             }
         }
+
+        public async Task UpdateConditionReportAsync(ConditionReport updated)
+        {
+            var filter = Builders<ConditionReport>.Filter.Eq(r => r.ConditionReportId, updated.ConditionReportId);
+            await _conditionReportCollection.ReplaceOneAsync(filter, updated);
+        }
+
+        public async Task UpdateAssessmentAsync(Assessment updated)
+        {
+            var filter = Builders<Assessment>.Filter.Eq(a => a.AssessmentId, updated.AssessmentId);
+            await _assessmentCollection.ReplaceOneAsync(filter, updated);
+        }
+
+        public async Task<ConditionReport?> GetConditionReportByIdAsync(Guid conditionReportId)
+        {
+            try
+            {
+                var filter = Builders<ConditionReport>.Filter.Eq(r => r.ConditionReportId, conditionReportId);
+                return await _conditionReportCollection.Find(filter).FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching ConditionReport with ID {Id}", conditionReportId);
+                throw;
+            }
+        }
+
     }
 }

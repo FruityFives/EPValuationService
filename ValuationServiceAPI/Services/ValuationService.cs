@@ -29,44 +29,81 @@ public class ValuationService : IValuationService
         _logger.LogInformation("ValuationRequest saved with ID: {Id}", request.Id);
     }
 
-    public async Task SubmitFullAssessmentAsync(SubmitAssessmentDTO dto)
+    public async Task SubmitFullAssessmentAsync(Assessment assessment, ConditionReport report)
     {
-        /* var report = dto.ConditionReport;
+        if (report == null) throw new ArgumentNullException(nameof(report));
+        if (assessment == null) throw new ArgumentNullException(nameof(assessment));
 
         if (report.ConditionReportId == Guid.Empty)
         {
             report.ConditionReportId = Guid.NewGuid();
-            _logger.LogWarning("Generated new ConditionReportId because it was missing.");
-        }*/
+            _logger.LogInformation("Generated new ConditionReportId: {Id}", report.ConditionReportId);
+        }
 
-        dto.ConditionReport.PdfUrl = _pdfGenerator.GeneratePdf(dto.ConditionReport);
+        report.PdfUrl = _pdfGenerator.GeneratePdf(report);
 
-        await _repository.AddConditionReportAsync(dto.ConditionReport);
-        _logger.LogInformation("ConditionReport saved with ID: {Id}", dto.ConditionReport.ConditionReportId);
+        await _repository.AddConditionReportAsync(report);
+        _logger.LogInformation("Saved ConditionReport with ID: {Id}", report.ConditionReportId);
 
-        var assessment = new Assessment
-        {
-            Title = dto.Title,
-            AssessmentPrice = dto.AssessmentPrice,
-            ExpertId = dto.ExpertId,
-            ValuationRequestId = dto.ValuationRequestId,
-            ConditionReportId = dto.ConditionReport.ConditionReportId
-        };
-
+        assessment.ConditionReportId = report.ConditionReportId;
         await _repository.AddAssessmentAsync(assessment);
-        _logger.LogInformation("Assessment saved with ID: {Id}", assessment.AssessmentId);
+        _logger.LogInformation("Saved Assessment with ID: {Id}", assessment.AssessmentId);
 
-        var itemDto = new ItemAssessmentDTO
+        var dto = new ItemAssessmentDTO
         {
-            Title = dto.Title,
-            Picture = dto.Picture,
-            Category = "TODO",
-            SellerId = dto.SellerId,
-            AssessmentPrice = dto.AssessmentPrice,
-            ConditionReportUrl = dto.ConditionReport.PdfUrl
+            Title = assessment.Title,
+            Picture = assessment.Picture,
+            Category = assessment.Category,
+            AssessmentPrice = assessment.AssessmentPrice,
+            SellerId = assessment.ExpertId,
+            ConditionReportUrl = report.PdfUrl,
         };
 
-        await _publisher.PublishAsync(itemDto);
-        _logger.LogInformation("Published item DTO to RabbitMQ");
+        await _publisher.PublishAsync(dto);
+        _logger.LogInformation("Published item DTO to RabbitMQ for Assessment: {Id}", assessment.AssessmentId);
     }
+
+    public async Task SubmitConditionReportAsync(ConditionReport report)
+    {
+        await _repository.AddConditionReportAsync(report);
+        _logger.LogInformation("Inserted ConditionReport with ID: {Id}", report.ConditionReportId);
+    }
+
+    public async Task UpdateConditionReportAsync(ConditionReport updated)
+    {
+        // Hent eksisterende rapport fra database
+        var existing = await _repository.GetConditionReportByIdAsync(updated.ConditionReportId);
+        if (existing == null)
+        {
+            _logger.LogWarning("ConditionReport not found with ID: {Id}", updated.ConditionReportId);
+            throw new Exception("ConditionReport not found");
+        }
+
+        // Slet gammel PDF hvis den findes
+        if (!string.IsNullOrWhiteSpace(existing.PdfUrl))
+        {
+            var pdfPath = Path.Combine("/app/data/condition-reports", Path.GetFileName(existing.PdfUrl));
+            if (File.Exists(pdfPath))
+            {
+                File.Delete(pdfPath);
+                _logger.LogInformation("Deleted old PDF file: {Path}", pdfPath);
+            }
+        }
+
+        // Generer ny PDF og opdater URL
+        updated.PdfUrl = _pdfGenerator.GeneratePdf(updated);
+
+        // Opdater i databasen
+        await _repository.UpdateConditionReportAsync(updated);
+        _logger.LogInformation("ConditionReport updated and PDF regenerated for ID: {Id}", updated.ConditionReportId);
+    }
+
+
+    public async Task UpdateAssessmentAsync(Assessment updated)
+    {
+        await _repository.UpdateAssessmentAsync(updated);
+        _logger.LogInformation("Assessment updated for ID: {Id}", updated.AssessmentId);
+    }
+
+
 }
