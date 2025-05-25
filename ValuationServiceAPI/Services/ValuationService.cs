@@ -1,9 +1,11 @@
 using ValuationServiceAPI.Repository;
 using ValuationServiceAPI.Models;
-using System.Xml;
 
 namespace ValuationServiceAPI.Services;
 
+/// <summary>
+/// Implementering af forretningslogik til vurderings- og rapportbehandling.
+/// </summary>
 public class ValuationService : IValuationService
 {
     private readonly ILogger<ValuationService> _logger;
@@ -23,12 +25,18 @@ public class ValuationService : IValuationService
         _repository = repository;
     }
 
+    /// <summary>
+    /// Gemmer en ny vurderingsanmodning i databasen.
+    /// </summary>
     public async Task SubmitValuationRequest(ValuationRequest request)
     {
         await _repository.AddValuationRequestAsync(request);
-        _logger.LogInformation("ValuationRequest saved with ID: {Id}", request.Id);
+        _logger.LogInformation("ValuationRequest gemt med ID: {Id}", request.Id);
     }
 
+    /// <summary>
+    /// Gemmer en tilstandsrapport og tilhørende vurdering, genererer PDF og publicerer til RabbitMQ.
+    /// </summary>
     public async Task SubmitFullAssessmentAsync(Assessment assessment, ConditionReport report)
     {
         if (report == null) throw new ArgumentNullException(nameof(report));
@@ -37,17 +45,16 @@ public class ValuationService : IValuationService
         if (report.ConditionReportId == Guid.Empty)
         {
             report.ConditionReportId = Guid.NewGuid();
-            _logger.LogInformation("Generated new ConditionReportId: {Id}", report.ConditionReportId);
+            _logger.LogInformation("Genereret ny ConditionReportId: {Id}", report.ConditionReportId);
         }
 
         report.PdfUrl = _pdfGenerator.GeneratePdf(report);
-
         await _repository.AddConditionReportAsync(report);
-        _logger.LogInformation("Saved ConditionReport with ID: {Id}", report.ConditionReportId);
+        _logger.LogInformation("Tilstandsrapport gemt med ID: {Id}", report.ConditionReportId);
 
         assessment.ConditionReportId = report.ConditionReportId;
         await _repository.AddAssessmentAsync(assessment);
-        _logger.LogInformation("Saved Assessment with ID: {Id}", assessment.AssessmentId);
+        _logger.LogInformation("Assessment gemt med ID: {Id}", assessment.AssessmentId);
 
         var dto = new ItemAssessmentDTO
         {
@@ -56,54 +63,57 @@ public class ValuationService : IValuationService
             Category = assessment.Category,
             AssessmentPrice = assessment.AssessmentPrice,
             SellerId = assessment.ExpertId,
-            ConditionReportUrl = report.PdfUrl,
+            ConditionReportUrl = report.PdfUrl
         };
 
         await _publisher.PublishAsync(dto);
-        _logger.LogInformation("Published item DTO to RabbitMQ for Assessment: {Id}", assessment.AssessmentId);
+        _logger.LogInformation("Assessment DTO publiceret til RabbitMQ: {Id}", assessment.AssessmentId);
     }
 
+    /// <summary>
+    /// Gemmer en tilstandsrapport uden vurdering.
+    /// </summary>
     public async Task SubmitConditionReportAsync(ConditionReport report)
     {
         await _repository.AddConditionReportAsync(report);
-        _logger.LogInformation("Inserted ConditionReport with ID: {Id}", report.ConditionReportId);
+        _logger.LogInformation("Tilstandsrapport gemt med ID: {Id}", report.ConditionReportId);
     }
 
+    /// <summary>
+    /// Opdaterer en eksisterende tilstandsrapport og regenererer PDF.
+    /// </summary>
     public async Task UpdateConditionReportAsync(ConditionReport updated)
     {
-        // Hent eksisterende rapport fra database
         var existing = await _repository.GetConditionReportByIdAsync(updated.ConditionReportId);
         if (existing == null)
         {
-            _logger.LogWarning("ConditionReport not found with ID: {Id}", updated.ConditionReportId);
-            throw new Exception("ConditionReport not found");
+            _logger.LogWarning("Ingen tilstandsrapport fundet med ID: {Id}", updated.ConditionReportId);
+            throw new Exception("Tilstandsrapport ikke fundet");
         }
 
-        // Slet gammel PDF hvis den findes
+        // Slet tidligere PDF-fil hvis den findes
         if (!string.IsNullOrWhiteSpace(existing.PdfUrl))
         {
             var pdfPath = Path.Combine("/app/data/condition-reports", Path.GetFileName(existing.PdfUrl));
             if (File.Exists(pdfPath))
             {
                 File.Delete(pdfPath);
-                _logger.LogInformation("Deleted old PDF file: {Path}", pdfPath);
+                _logger.LogInformation("Slettede tidligere PDF: {Path}", pdfPath);
             }
         }
 
-        // Generer ny PDF og opdater URL
+        // Generér ny PDF og opdater rapport
         updated.PdfUrl = _pdfGenerator.GeneratePdf(updated);
-
-        // Opdater i databasen
         await _repository.UpdateConditionReportAsync(updated);
-        _logger.LogInformation("ConditionReport updated and PDF regenerated for ID: {Id}", updated.ConditionReportId);
+        _logger.LogInformation("Tilstandsrapport og PDF opdateret for ID: {Id}", updated.ConditionReportId);
     }
 
-
+    /// <summary>
+    /// Opdaterer en eksisterende vurdering.
+    /// </summary>
     public async Task UpdateAssessmentAsync(Assessment updated)
     {
         await _repository.UpdateAssessmentAsync(updated);
-        _logger.LogInformation("Assessment updated for ID: {Id}", updated.AssessmentId);
+        _logger.LogInformation("Assessment opdateret for ID: {Id}", updated.AssessmentId);
     }
-
-
 }

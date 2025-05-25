@@ -1,14 +1,19 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace ValuationServiceAPI.Models
+namespace ValuationServiceAPI.Models;
+
+/// <summary>
+/// Brugerens anmodning om vurdering af en genstand.
+/// </summary>
+public class ValuationRequest
 {
-    public class ValuationRequest
-    {
-        [BsonId]
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public Guid UserId { get; set; }
-        public string Description { get; set; } = string.Empty;
-        public List<string> Pictures { get; set; } = new();
-    }
+    [BsonId]
+    public Guid Id { get; set; } = Guid.NewGuid();
+
+    public Guid UserId { get; set; }
+
+    public string Description { get; set; } = string.Empty;
+
+    public List<string> Pictures { get; set; } = new();
 }

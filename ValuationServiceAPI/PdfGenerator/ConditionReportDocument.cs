@@ -3,24 +3,39 @@ using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using ValuationServiceAPI.Models;
 
+/// <summary>
+/// Genererer en PDF-rapport baseret på en tilstandsrapport (ConditionReport).
+/// Rapporten bruges som vejledende vurdering til brugere uden fysisk adgang til varen.
+/// </summary>
 public class ConditionReportDocument : IDocument
 {
     private readonly ConditionReport _report;
 
+    /// <summary>
+    /// Initialiserer en ny instans af <see cref="ConditionReportDocument"/> med en given tilstandsrapport.
+    /// </summary>
+    /// <param name="report">Tilstandsrapporten der skal konverteres til PDF.</param>
     public ConditionReportDocument(ConditionReport report)
     {
         _report = report;
     }
 
+    /// <summary>
+    /// Returnerer metadata for dokumentet (standardopsætning).
+    /// </summary>
     public DocumentMetadata GetMetadata() => DocumentMetadata.Default;
 
+    /// <summary>
+    /// Komponerer indholdet i PDF-dokumentet, herunder header, rapportdata og footer.
+    /// </summary>
+    /// <param name="container">Dokumentcontaineren hvor indholdet bygges.</param>
     public void Compose(IDocumentContainer container)
     {
         container.Page(page =>
         {
             page.Margin(40);
 
-            // HEADER
+            // Sidehoved
             page.Header().Row(row =>
             {
                 row.RelativeColumn().Text("Tilstandsrapport")
@@ -34,6 +49,7 @@ public class ConditionReportDocument : IDocument
                 });
             });
 
+            // Rapportindhold
             page.Content().PaddingVertical(20).Column(col =>
             {
                 col.Item().Text(text =>
@@ -58,6 +74,7 @@ public class ConditionReportDocument : IDocument
                 });
             });
 
+            // Sidefod
             page.Footer().AlignCenter().Text("Genereret af Vurderingsservice • Fortroligt dokument")
                 .FontSize(9).Italic().FontColor(Colors.Grey.Medium);
         });

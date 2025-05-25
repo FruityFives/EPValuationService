@@ -1,89 +1,128 @@
 using MongoDB.Driver;
 using ValuationServiceAPI.Models;
 
-namespace ValuationServiceAPI.Repository
+namespace ValuationServiceAPI.Repository;
+
+/// <summary>
+/// Repository til databaseoperationer relateret til vurderinger og tilstandsrapporter.
+/// </summary>
+public class ValuationRepository : IValuationRepository
 {
-    public class ValuationRepository : IValuationRepository
+    private readonly IMongoCollection<ValuationRequest> _valuationCollection;
+    private readonly IMongoCollection<Assessment> _assessmentCollection;
+    private readonly IMongoCollection<ConditionReport> _conditionReportCollection;
+    private readonly ILogger<ValuationRepository> _logger;
+
+    public ValuationRepository(
+        ILogger<ValuationRepository> logger,
+        MongoDbContext context)
     {
-        private readonly IMongoCollection<ValuationRequest> _valuationCollection;
-        private readonly IMongoCollection<Assessment> _assessmentCollection;
-        private readonly IMongoCollection<ConditionReport> _conditionReportCollection;
-        private readonly ILogger<ValuationRepository> _logger;
+        _logger = logger;
+        _valuationCollection = context.ValuationRequests;
+        _assessmentCollection = context.Assessments;
+        _conditionReportCollection = context.ConditionReports;
+    }
 
-        public ValuationRepository(
-            ILogger<ValuationRepository> logger,
-            MongoDbContext context)
+    /// <summary>
+    /// Tilføjer en ny vurderingsanmodning til databasen.
+    /// </summary>
+    public async Task AddValuationRequestAsync(ValuationRequest request)
+    {
+        try
         {
-            _logger = logger;
-            _valuationCollection = context.ValuationRequests;
-            _assessmentCollection = context.Assessments;
-            _conditionReportCollection = context.ConditionReports;
+            await _valuationCollection.InsertOneAsync(request);
         }
-
-        public async Task AddValuationRequestAsync(ValuationRequest request)
+        catch (Exception ex)
         {
-            try
-            {
-                await _valuationCollection.InsertOneAsync(request);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error inserting ValuationRequest");
-                throw;
-            }
+            _logger.LogError(ex, "Fejl ved indsættelse af ValuationRequest");
+            throw;
         }
+    }
 
-        public async Task AddAssessmentAsync(Assessment assessment)
+    /// <summary>
+    /// Tilføjer en ny vurdering (Assessment) til databasen.
+    /// </summary>
+    public async Task AddAssessmentAsync(Assessment assessment)
+    {
+        try
         {
-            try
-            {
-                await _assessmentCollection.InsertOneAsync(assessment);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error inserting Assessment");
-                throw;
-            }
+            await _assessmentCollection.InsertOneAsync(assessment);
         }
-
-        public async Task AddConditionReportAsync(ConditionReport report)
+        catch (Exception ex)
         {
-            try
-            {
-                await _conditionReportCollection.InsertOneAsync(report);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error inserting ConditionReport");
-                throw;
-            }
+            _logger.LogError(ex, "Fejl ved indsættelse af Assessment");
+            throw;
         }
+    }
 
-        public async Task UpdateConditionReportAsync(ConditionReport updated)
+    /// <summary>
+    /// Tilføjer en ny tilstandsrapport til databasen.
+    /// </summary>
+    public async Task AddConditionReportAsync(ConditionReport report)
+    {
+        try
         {
-            var filter = Builders<ConditionReport>.Filter.Eq(r => r.ConditionReportId, updated.ConditionReportId);
+            await _conditionReportCollection.InsertOneAsync(report);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Fejl ved indsættelse af ConditionReport");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Opdaterer en eksisterende tilstandsrapport i databasen.
+    /// </summary>
+    public async Task UpdateConditionReportAsync(ConditionReport updated)
+    {
+        var filter = Builders<ConditionReport>.Filter.Eq(r => r.ConditionReportId, updated.ConditionReportId);
+
+        try
+        {
             await _conditionReportCollection.ReplaceOneAsync(filter, updated);
         }
-
-        public async Task UpdateAssessmentAsync(Assessment updated)
+        catch (Exception ex)
         {
-            var filter = Builders<Assessment>.Filter.Eq(a => a.AssessmentId, updated.AssessmentId);
+            _logger.LogError(ex, "Fejl ved opdatering af ConditionReport med ID {Id}", updated.ConditionReportId);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Opdaterer en eksisterende vurdering i databasen.
+    /// </summary>
+    public async Task UpdateAssessmentAsync(Assessment updated)
+    {
+        var filter = Builders<Assessment>.Filter.Eq(a => a.AssessmentId, updated.AssessmentId);
+
+        try
+        {
             await _assessmentCollection.ReplaceOneAsync(filter, updated);
         }
-
-        public async Task<ConditionReport?> GetConditionReportByIdAsync(Guid conditionReportId)
+        catch (Exception ex)
         {
-            try
-            {
-                var filter = Builders<ConditionReport>.Filter.Eq(r => r.ConditionReportId, conditionReportId);
-                return await _conditionReportCollection.Find(filter).FirstOrDefaultAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching ConditionReport with ID {Id}", conditionReportId);
-                throw;
-            }
+            _logger.LogError(ex, "Fejl ved opdatering af Assessment med ID {Id}", updated.AssessmentId);
+            throw;
         }
+    }
 
+    /// <summary>
+    /// Henter en tilstandsrapport baseret på ID.
+    /// </summary>
+    /// <param name="conditionReportId">ID på tilstandsrapporten.</param>
+    /// <returns>Den fundne ConditionReport eller null.</returns>
+    public async Task<ConditionReport?> GetConditionReportByIdAsync(Guid conditionReportId)
+    {
+        try
+        {
+            var filter = Builders<ConditionReport>.Filter.Eq(r => r.ConditionReportId, conditionReportId);
+            return await _conditionReportCollection.Find(filter).FirstOrDefaultAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Fejl ved hentning af ConditionReport med ID {Id}", conditionReportId);
+            throw;
+        }
     }
 }
