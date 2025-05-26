@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using ValuationServiceAPI.Models;
 using ValuationServiceAPI.Services;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using Microsoft.Extensions.Logging;
 
 
 namespace ValuationServiceAPI.Controllers
@@ -22,11 +25,40 @@ namespace ValuationServiceAPI.Controllers
 
         [HttpGet("ping")]
         public IActionResult Ping() => Ok("ValuationService is up");
+        
 
+        [Authorize(Roles = "Admin")]
+        [HttpPost("test-auth")]
+        public IActionResult TestAuth()
+        {
+            var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            _logger.LogInformation("TestAuth hit. Username: {Username}, Role: {Role}", username, role);
+
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(role))
+            {
+                _logger.LogWarning("Token validation failed. Missing claims.");
+                return Unauthorized("Invalid token.");
+            }
+
+            return Ok("Token virker!");
+        }
+
+
+        [Authorize (Roles = "Admin")]
         [HttpPost("valuationrequest")]
         public async Task<IActionResult> SubmitValuation([FromBody] ValuationRequest request)
         {
-            _logger.LogInformation("Modtog valuation request fra bruger {userId}", request.UserId);
+           var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            _logger.LogInformation("TestAuth hit. Username: {Username}, Role: {Role}", username, role);
+
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(role))
+            {
+                _logger.LogWarning("Token validation failed. Missing claims.");
+                return Unauthorized("Invalid token.");
+            }
+            
             await _service.SubmitValuationRequest(request);
             return Ok("Valuation saved");
         }
