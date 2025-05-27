@@ -86,11 +86,7 @@ namespace ValuationServiceAPI.Services
         /// Gemmer en tilstandsrapport i databasen.
         /// </summary>
         /// <param name="report">Tilstandsrapporten der skal gemmes.</param>
-        public async Task SubmitConditionReportAsync(ConditionReport report)
-        {
-            await _repository.AddConditionReportAsync(report);
-            _logger.LogInformation("Inserted ConditionReport with ID: {Id}", report.ConditionReportId);
-        }
+    
 
         /// <summary>
         /// Opdaterer en eksisterende tilstandsrapport, regenererer PDF og sletter gammel PDF-fil.

@@ -6,7 +6,6 @@ namespace ValuationServiceAPI.Services
     {
         Task SubmitValuationRequest(ValuationRequest request);
         Task SubmitFullAssessmentAsync(Assessment assessment, ConditionReport report);
-        Task SubmitConditionReportAsync(ConditionReport report);
         Task UpdateConditionReportAsync(ConditionReport updated);
         Task UpdateAssessmentAsync(Assessment updated);
 

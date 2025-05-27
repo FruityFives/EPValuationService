@@ -57,17 +57,6 @@ namespace ValuationServiceAPI.Controllers
         /// </summary>
         /// <param name="report">Tilstandsrapport til gemning.</param>
         /// <returns>Guid for den gemte tilstandsrapport.</returns>
-        [HttpPost("addconditionreport")]
-        public async Task<IActionResult> SubmitConditionReport([FromBody] ConditionReport report)
-        {
-            if (report.ConditionReportId == Guid.Empty)
-                report.ConditionReportId = Guid.NewGuid();
-
-            await _service.SubmitConditionReportAsync(report);
-
-            _logger.LogInformation("Saved condition report with ID {Id}", report.ConditionReportId);
-            return Ok(report.ConditionReportId);
-        }
 
         /// <summary>
         /// Modtager en fuld vurderingsrapport inklusiv vurdering og tilstandsrapport.
