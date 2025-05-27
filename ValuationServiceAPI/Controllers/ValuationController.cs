@@ -45,7 +45,7 @@ namespace ValuationServiceAPI.Controllers
         }
 
 
-        [Authorize (Roles = "Admin")]
+        [Authorize (Roles = "Ekspert, Admin")]
         [HttpPost("valuationrequest")]
         public async Task<IActionResult> SubmitValuation([FromBody] ValuationRequest request)
         {
@@ -63,6 +63,7 @@ namespace ValuationServiceAPI.Controllers
             return Ok("Valuation saved");
         }
 
+        [Authorize(Roles = "Ekspert, Admin")]
         [HttpPost("addconditionreport")]
         public async Task<IActionResult> SubmitConditionReport([FromBody] ConditionReport report)
         {
@@ -75,7 +76,7 @@ namespace ValuationServiceAPI.Controllers
             return Ok(report.ConditionReportId);
         }
 
-
+        [Authorize(Roles = "Ekspert, Admin")]
         [HttpPost("addeffectassessment")]
         public async Task<IActionResult> SubmitAssessment([FromBody] SubmitAssessment dto)
         {
@@ -87,6 +88,7 @@ namespace ValuationServiceAPI.Controllers
             return Ok("Assessment and report submitted");
         }
 
+        [Authorize(Roles = "Ekspert, Admin")]
         [HttpPut("update/conditionreport")]
         public async Task<IActionResult> UpdateConditionReport([FromBody] ConditionReport updatedReport)
         {
@@ -94,6 +96,7 @@ namespace ValuationServiceAPI.Controllers
             return Ok("Condition report updated.");
         }
 
+        [Authorize(Roles = "Ekspert, Admin")]
         [HttpPut("update/assessment/{id}")]
         public async Task<IActionResult> UpdateAssessment(Assessment updatedAssessment)
         {
