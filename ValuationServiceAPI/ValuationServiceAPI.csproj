@@ -6,8 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyVersion>1.0.1.1</AssemblyVersion>
     <FileVersion>1.0.1.1</FileVersion>
-    <InformationalVersion>3.0.1</InformationalVersion>
-    <Description> 
+    <InformationalVersion>3.0.2</InformationalVersion>
+    <Description>
+      3.0.2 Comments + SDK + Removed Test Endpoints
       3.0.1 Filepath corrected
       3.0.0 Added pdf generation using QuestPDF
       2.1.1 added collection to mongoDB 
