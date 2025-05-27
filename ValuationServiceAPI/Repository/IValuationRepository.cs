@@ -10,6 +10,8 @@ namespace ValuationServiceAPI.Repository
         Task UpdateConditionReportAsync(ConditionReport report);
         Task UpdateAssessmentAsync(Assessment assessment);
         Task<ConditionReport?> GetConditionReportByIdAsync(Guid conditionReportId);
+        Task<bool> IsDatabaseEmptyAsync();
+        Task<IEnumerable<ValuationRequest>> GetAllValuationRequestsAsync();
 
     }
 }

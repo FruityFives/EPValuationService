@@ -26,7 +26,7 @@ namespace ValuationServiceAPI.Controllers
             _service = service;
             _logger = logger;
         }
-        
+
         /// <summary>
         /// Modtager en vurderingsanmodning fra en autoriseret admin-bruger.
         /// Validerer token og sender anmodningen til serviceslaget.
@@ -46,7 +46,7 @@ namespace ValuationServiceAPI.Controllers
                 _logger.LogWarning("Token validation failed. Missing claims.");
                 return Unauthorized("Invalid token.");
             }
-            
+
             await _service.SubmitValuationRequest(request);
             return Ok("Valuation saved");
         }
@@ -97,5 +97,25 @@ namespace ValuationServiceAPI.Controllers
             await _service.UpdateAssessmentAsync(updatedAssessment);
             return Ok("Assessment updated.");
         }
+
+        /// <summary>
+        /// Henter alle vurderingsanmodninger i databasen.
+        /// </summary>
+        /// <returns>En liste af ValuationRequest-objekter.</returns>
+        [HttpGet("requests")]
+        public async Task<IActionResult> GetAllValuationRequests()
+        {
+            try
+            {
+                var requests = await _service.GetAllValuationRequestsAsync();
+                return Ok(requests);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Fejl ved hentning af vurderingsanmodninger.");
+                return StatusCode(500, "Intern serverfejl");
+            }
+        }
+
     }
 }

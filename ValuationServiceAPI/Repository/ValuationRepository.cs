@@ -85,5 +85,32 @@ namespace ValuationServiceAPI.Repository
             }
         }
 
+        public async Task<bool> IsDatabaseEmptyAsync()
+        {
+            try
+            {
+                var count = await _valuationCollection.CountDocumentsAsync(FilterDefinition<ValuationRequest>.Empty);
+                return count == 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking if database is empty");
+                throw;
+            }
+
+        }
+
+        public async Task<IEnumerable<ValuationRequest>> GetAllValuationRequestsAsync()
+        {
+            try
+            {
+                return await _valuationCollection.Find(_ => true).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Fejl ved hentning af alle ValuationRequests.");
+                throw;
+            }
+        }
     }
 }

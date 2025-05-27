@@ -8,7 +8,8 @@ namespace ValuationServiceAPI.Services
         Task SubmitFullAssessmentAsync(Assessment assessment, ConditionReport report);
         Task UpdateConditionReportAsync(ConditionReport updated);
         Task UpdateAssessmentAsync(Assessment updated);
-
+        Task<bool> IsDatabaseEmptyAsync();
+        Task<IEnumerable<ValuationRequest>> GetAllValuationRequestsAsync();
 
     }
 }

@@ -1,85 +1,172 @@
 using ValuationServiceAPI.Models;
 using ValuationServiceAPI.Services;
 
-namespace ValuationServiceAPI.SeedData;
-
-public class SeedData
+namespace ValuationServiceAPI.SeedData
 {
-    private readonly IValuationService _valuationService;
-    private readonly ILogger<SeedData> _logger;
-
-    public SeedData(IValuationService valuationService, ILogger<SeedData> logger)
+    public class SeedData
     {
-        _valuationService = valuationService;
-        _logger = logger;
-    }
+        private readonly IValuationService _valuationService;
+        private readonly ILogger<SeedData> _logger;
 
-    public async Task SeedAsync()
-    {
-        _logger.LogInformation("Starter seeding af eksempeldata...");
-
-        var entries = new List<(ValuationRequest, ConditionReport, Assessment)>
-    {
-        (
-            new ValuationRequest
-            {
-                Id = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
-                Description = "Antikt vægur fra 1800-tallet",
-                Pictures = new List<string> { "https://example.com/vagur.jpg" }
-            },
-            new ConditionReport
-            {
-                ConditionReportId = Guid.NewGuid(),
-                Title = "Rapport: Vægur",
-                Summary = "Meget velholdt, original urværk",
-                MaterialCondition = "Træ og messing",
-                Functionality = "Fungerer korrekt",
-                ComponentRemarks = "Små ridser på overflade",
-                AuthenticityDetails = "Indgraveret initialer, verificeret ægte",
-                Dimensions = "60x30x10 cm",
-                ReportDate = DateTime.UtcNow,
-                AssessedBy = "Ekspert A"
-            },
-            new Assessment
-            {
-                AssessmentId = Guid.NewGuid(),
-                Title = "Antikt vægur",
-                AssessmentPrice = 7500,
-                ExpertId = Guid.NewGuid(),
-                Picture = "https://example.com/vagur.jpg",
-                Category = "Ure"
-            }
-        ),
-        // ... tilføj flere eksempler her, som du allerede har
-    };
-
-        const int maxAttempts = 10;
-
-        for (int attempt = 1; attempt <= maxAttempts; attempt++)
+        public SeedData(IValuationService valuationService, ILogger<SeedData> logger)
         {
-            try
-            {
-                foreach (var (request, report, assessment) in entries)
-                {
-                    assessment.ValuationRequestId = request.Id;
-                    assessment.ConditionReportId = report.ConditionReportId;
-
-                    await _valuationService.SubmitValuationRequest(request);
-                    await _valuationService.SubmitFullAssessmentAsync(assessment, report);
-                    _logger.LogInformation("✔ Indsat: {Title}", assessment.Title);
-                }
-
-                _logger.LogInformation("✅ Seeding afsluttet.");
-                return;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "⚠️ Forsøg {Attempt}/{Max} mislykkedes. Prøver igen om 3 sekunder...", attempt, maxAttempts);
-                await Task.Delay(3000);
-            }
+            _valuationService = valuationService;
+            _logger = logger;
         }
 
-        _logger.LogError("❌ Kunne ikke færdiggøre seeding efter {Max} forsøg.", maxAttempts);
+        public async Task SeedAsync()
+        {
+            _logger.LogInformation("Starter seeding af eksempeldata...");
+
+            var isEmpty = await _valuationService.IsDatabaseEmptyAsync();
+            if (!isEmpty)
+            {
+                _logger.LogInformation("Skipper seeding, data findes allerede i databasen.");
+                return;
+            }
+
+            var entries = new List<(ValuationRequest, ConditionReport, Assessment)>
+            {
+                (
+                    new ValuationRequest
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = Guid.NewGuid(),
+                        Description = "Antikt vægur fra 1800-tallet",
+                        Pictures = new List<string> { "https://example.com/vagur.jpg" }
+                    },
+                    new ConditionReport
+                    {
+                        ConditionReportId = Guid.NewGuid(),
+                        Title = "Rapport: Vægur",
+                        Summary = "Meget velholdt, original urværk",
+                        MaterialCondition = "Træ og messing",
+                        Functionality = "Fungerer korrekt",
+                        ComponentRemarks = "Små ridser på overflade",
+                        AuthenticityDetails = "Indgraveret initialer, verificeret ægte",
+                        Dimensions = "60x30x10 cm",
+                        ReportDate = DateTime.UtcNow,
+                        AssessedBy = "Ekspert A"
+                    },
+                    new Assessment
+                    {
+                        AssessmentId = Guid.NewGuid(),
+                        Title = "Antikt vægur",
+                        AssessmentPrice = 7500,
+                        ExpertId = Guid.NewGuid(),
+                        Picture = "https://example.com/vagur.jpg",
+                        Category = "Ure"
+                    }
+                ),
+                (
+                    new ValuationRequest
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = Guid.NewGuid(),
+                        Description = "Vintage kamera fra 1960'erne",
+                        Pictures = new List<string> { "https://example.com/kamera.jpg" }
+                    },
+                    new ConditionReport
+                    {
+                        ConditionReportId = Guid.NewGuid(),
+                        Title = "Rapport: Kamera",
+                        Summary = "Let brugt, virker stadig",
+                        MaterialCondition = "Metal og læder, små ridser",
+                        Functionality = "Fungerer som forventet",
+                        ComponentRemarks = "Original linse og taske inkluderet",
+                        AuthenticityDetails = "Serienummer matcher model",
+                        Dimensions = "15x10x7 cm",
+                        ReportDate = DateTime.UtcNow,
+                        AssessedBy = "Ekspert B"
+                    },
+                    new Assessment
+                    {
+                        AssessmentId = Guid.NewGuid(),
+                        Title = "Retro kamera",
+                        AssessmentPrice = 2200,
+                        ExpertId = Guid.NewGuid(),
+                        Picture = "https://example.com/kamera.jpg",
+                        Category = "Elektronik"
+                    }
+                ),
+                (
+                    new ValuationRequest
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = Guid.NewGuid(),
+                        Description = "Oliemaleri af ukendt kunstner, 1923",
+                        Pictures = new List<string> { "https://example.com/maleri.jpg" }
+                    },
+                    new ConditionReport
+                    {
+                        ConditionReportId = Guid.NewGuid(),
+                        Title = "Rapport: Maleri",
+                        Summary = "Pæn stand, original ramme",
+                        MaterialCondition = "Lærred og træ",
+                        Functionality = "Ikke relevant",
+                        ComponentRemarks = "Ingen synlige skader",
+                        AuthenticityDetails = "Ingen signatur, men aldersspor tydelige",
+                        Dimensions = "70x50 cm",
+                        ReportDate = DateTime.UtcNow,
+                        AssessedBy = "Ekspert C"
+                    },
+                    new Assessment
+                    {
+                        AssessmentId = Guid.NewGuid(),
+                        Title = "Oliemaleri 1923",
+                        AssessmentPrice = 11000,
+                        ExpertId = Guid.NewGuid(),
+                        Picture = "https://example.com/maleri.jpg",
+                        Category = "Kunst"
+                    }
+                )
+            };
+
+            const int maxAttempts = 10;
+
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                try
+                {
+                    foreach (var (request, report, assessment) in entries)
+                    {
+                        assessment.ValuationRequestId = request.Id;
+                        assessment.ConditionReportId = report.ConditionReportId;
+
+                        await _valuationService.SubmitValuationRequest(request);
+                        await _valuationService.SubmitFullAssessmentAsync(assessment, report);
+                        _logger.LogInformation("Indsat: {Title}", assessment.Title);
+                    }
+
+                    // Ubehandlede anmodninger
+                    await _valuationService.SubmitValuationRequest(new ValuationRequest
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = Guid.NewGuid(),
+                        Description = "Ubehandlet: Gammel skrivemaskine fra 1940’erne",
+                        Pictures = new List<string> { "https://example.com/skrivemaskine.jpg" }
+                    });
+
+                    await _valuationService.SubmitValuationRequest(new ValuationRequest
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = Guid.NewGuid(),
+                        Description = "Ubehandlet: Klassisk telefon i bakelit",
+                        Pictures = new List<string> { "https://example.com/telefon.jpg" }
+                    });
+
+                    _logger.LogInformation("Indsat 2 ubehandlede vurderingsanmodninger.");
+                    _logger.LogInformation("Seeding afsluttet.");
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Forsøg {Attempt}/{Max} mislykkedes. Prøver igen om 3 sekunder...", attempt, maxAttempts);
+                    await Task.Delay(3000);
+                }
+            }
+
+            _logger.LogError("❌ Kunne ikke færdiggøre seeding efter {Max} forsøg.", maxAttempts);
+        }
     }
 }

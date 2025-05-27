@@ -86,7 +86,7 @@ namespace ValuationServiceAPI.Services
         /// Gemmer en tilstandsrapport i databasen.
         /// </summary>
         /// <param name="report">Tilstandsrapporten der skal gemmes.</param>
-    
+
 
         /// <summary>
         /// Opdaterer en eksisterende tilstandsrapport, regenererer PDF og sletter gammel PDF-fil.
@@ -126,5 +126,34 @@ namespace ValuationServiceAPI.Services
             await _repository.UpdateAssessmentAsync(updated);
             _logger.LogInformation("Assessment updated for ID: {Id}", updated.AssessmentId);
         }
+
+        /// <summary>
+        /// Undersøger om databasen er tom for vurderingsanmodninger, vurderinger og tilstandsrapporter.
+        /// </summary>
+        /// <returns>True hvis databasen er tom, ellers false.</returns>
+        public async Task<bool> IsDatabaseEmptyAsync()
+        {
+            try
+            {
+                var isEmpty = await _repository.IsDatabaseEmptyAsync();
+                _logger.LogInformation("Database empty check: {IsEmpty}", isEmpty);
+                return isEmpty;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking if database is empty");
+                throw;
+            }
+        }
+        
+        /// <summary>
+        /// Henter alle vurderingsanmodninger fra databasen.
+        /// /// </summary>
+        /// <returns>En liste af ValuationRequest-objekter.</returns>
+        public async Task<IEnumerable<ValuationRequest>> GetAllValuationRequestsAsync()
+        {
+            return await _repository.GetAllValuationRequestsAsync();
+        }
+
     }
 }
