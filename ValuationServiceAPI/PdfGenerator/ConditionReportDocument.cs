@@ -3,24 +3,42 @@ using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using ValuationServiceAPI.Models;
 
+/// <summary>
+/// Dokumentklasse til at generere en PDF tilstandsrapport ved hjælp af QuestPDF.
+/// Rapporten viser detaljer om en vurderet genstand baseret på et ConditionReport-objekt.
+/// </summary>
 public class ConditionReportDocument : IDocument
 {
     private readonly ConditionReport _report;
 
+    /// <summary>
+    /// Initialiserer en ny instans af ConditionReportDocument med en tilstandsrapport.
+    /// </summary>
+    /// <param name="report">Tilstandsrapport data til PDF'en.</param>
     public ConditionReportDocument(ConditionReport report)
     {
         _report = report;
     }
 
+    /// <summary>
+    /// Returnerer metadata for dokumentet.
+    /// </summary>
+    /// <returns>Standard dokumentmetadata.</returns>
     public DocumentMetadata GetMetadata() => DocumentMetadata.Default;
 
+    /// <summary>
+    /// Komponerer indholdet af PDF-dokumentet.
+    /// Indeholder header med titel og dato, en indholdssektion med rapportdetaljer,
+    /// samt en footer med fortrolighedsnotits.
+    /// </summary>
+    /// <param name="container">Dokumentcontainer til at bygge siden i.</param>
     public void Compose(IDocumentContainer container)
     {
         container.Page(page =>
         {
             page.Margin(40);
 
-            // HEADER
+            // Header med titel og reference
             page.Header().Row(row =>
             {
                 row.RelativeColumn().Text("Tilstandsrapport")
@@ -34,6 +52,7 @@ public class ConditionReportDocument : IDocument
                 });
             });
 
+            // Hovedindhold med vejledende tekst og rapportdetaljer
             page.Content().PaddingVertical(20).Column(col =>
             {
                 col.Item().Text(text =>
@@ -58,6 +77,7 @@ public class ConditionReportDocument : IDocument
                 });
             });
 
+            // Footer med fortrolighedsnotits
             page.Footer().AlignCenter().Text("Genereret af Vurderingsservice • Fortroligt dokument")
                 .FontSize(9).Italic().FontColor(Colors.Grey.Medium);
         });
