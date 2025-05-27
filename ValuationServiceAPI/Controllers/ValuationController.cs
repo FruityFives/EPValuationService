@@ -32,7 +32,7 @@ namespace ValuationServiceAPI.Controllers
         /// Validerer token og sender anmodningen til serviceslaget.
         /// </summary>
         /// <param name="request">Vurderingsanmodning med nødvendige data.</param>
-        /// <returns>200 OK ved succes, 401 Unauthorized ved manglende eller ugyldige claims.</returns>
+        /// <returns>200 OK ved succes, 401 Unauthorized ved manglende eller ugyldige claimss.</returns>
         [Authorize(Roles = "Admin")]
         [HttpPost("valuationrequest")]
         public async Task<IActionResult> SubmitValuation([FromBody] ValuationRequest request)
