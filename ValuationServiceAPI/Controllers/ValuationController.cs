@@ -67,6 +67,15 @@ namespace ValuationServiceAPI.Controllers
         [HttpPost("addconditionreport")]
         public async Task<IActionResult> SubmitConditionReport([FromBody] ConditionReport report)
         {
+            var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            _logger.LogInformation("TestAuth hit. Username: {Username}, Role: {Role}", username, role);
+
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(role))
+            {
+                _logger.LogWarning("Token validation failed. Missing claims.");
+                return Unauthorized("Invalid token.");
+            }
             if (report.ConditionReportId == Guid.Empty)
                 report.ConditionReportId = Guid.NewGuid();
 
@@ -80,6 +89,15 @@ namespace ValuationServiceAPI.Controllers
         [HttpPost("addeffectassessment")]
         public async Task<IActionResult> SubmitAssessment([FromBody] SubmitAssessment dto)
         {
+            var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            _logger.LogInformation("TestAuth hit. Username: {Username}, Role: {Role}", username, role);
+
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(role))
+            {
+                _logger.LogWarning("Token validation failed. Missing claims.");
+                return Unauthorized("Invalid token.");
+            }
             _logger.LogInformation("Modtog assessment request fra bruger");
             if (dto.ConditionReport == null)
                 return BadRequest("Condition report is required.");
@@ -92,6 +110,15 @@ namespace ValuationServiceAPI.Controllers
         [HttpPut("update/conditionreport")]
         public async Task<IActionResult> UpdateConditionReport([FromBody] ConditionReport updatedReport)
         {
+            var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            _logger.LogInformation("TestAuth hit. Username: {Username}, Role: {Role}", username, role);
+
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(role))
+            {
+                _logger.LogWarning("Token validation failed. Missing claims.");
+                return Unauthorized("Invalid token.");
+            }
             await _service.UpdateConditionReportAsync(updatedReport);
             return Ok("Condition report updated.");
         }
@@ -100,6 +127,15 @@ namespace ValuationServiceAPI.Controllers
         [HttpPut("update/assessment/{id}")]
         public async Task<IActionResult> UpdateAssessment(Assessment updatedAssessment)
         {
+            var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            _logger.LogInformation("TestAuth hit. Username: {Username}, Role: {Role}", username, role);
+
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(role))
+            {
+                _logger.LogWarning("Token validation failed. Missing claims.");
+                return Unauthorized("Invalid token.");
+            }
             await _service.UpdateAssessmentAsync(updatedAssessment);
             return Ok("Assessment updated.");
         }
