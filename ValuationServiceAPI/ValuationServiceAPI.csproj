@@ -6,8 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyVersion>1.0.1.1</AssemblyVersion>
     <FileVersion>1.0.1.1</FileVersion>
-    <InformationalVersion>4.1.2</InformationalVersion>
+    <InformationalVersion>4.2.2</InformationalVersion>
     <Description>
+      4.2.2 Retry logic for RabbitMQ
       4.1.2 SeedData
       4.0.2 Fixed code and removed sumbitcondtitionreport endpoint
       3.0.2 Comments + SDK + Removed Test Endpoints

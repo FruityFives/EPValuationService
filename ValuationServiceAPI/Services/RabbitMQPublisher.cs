@@ -31,31 +31,43 @@ namespace ValuationServiceAPI.Services
             var host = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost";
             var factory = new ConnectionFactory { HostName = host };
 
-            await using var connection = await factory.CreateConnectionAsync();
-            await using var channel = await connection.CreateChannelAsync();
+            int retries = 10;
+            for (int i = 1; i <= retries; i++)
+            {
+                try
+                {
+                    await using var connection = await factory.CreateConnectionAsync();
+                    await using var channel = await connection.CreateChannelAsync();
 
-            // Sørg for at køen eksisterer
-            await channel.QueueDeclareAsync(
-                queue: "assessmentQueue",
-                durable: false,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null
-            );
+                    await channel.QueueDeclareAsync(
+                        queue: "assessmentQueue",
+                        durable: false,
+                        exclusive: false,
+                        autoDelete: false,
+                        arguments: null
+                    );
 
-            // Serialiser dto til JSON bytes
-            var body = JsonSerializer.SerializeToUtf8Bytes(dto);
+                    var body = JsonSerializer.SerializeToUtf8Bytes(dto);
 
-            // Publicer beskeden til køen
-            await channel.BasicPublishAsync(
-                exchange: "",
-                routingKey: "assessmentQueue",
-                mandatory: false,
-                basicProperties: new BasicProperties(),
-                body: body
-            );
+                    await channel.BasicPublishAsync(
+                        exchange: "",
+                        routingKey: "assessmentQueue",
+                        mandatory: false,
+                        basicProperties: new BasicProperties(),
+                        body: body
+                    );
 
-            _logger.LogInformation("Published assessment: {@Assessment}", dto);
+                    _logger.LogInformation("✔ Published assessment: {@Assessment}", dto);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "RabbitMQ ikke klar (forsøg {Attempt}/{Retries}). Prøver igen...", i, retries);
+                    await Task.Delay(3000);
+                }
+            }
+
+            _logger.LogError("Kunne ikke publicere til RabbitMQ efter {Retries} forsøg.", retries);
         }
     }
 }
