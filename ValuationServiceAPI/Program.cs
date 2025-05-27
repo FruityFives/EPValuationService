@@ -1,15 +1,14 @@
 using ValuationServiceAPI.Services;
 using ValuationServiceAPI.Repository;
+using ValuationServiceAPI.SeedData;
 using NLog.Web;
 using QuestPDF.Infrastructure;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-
-
-
 Console.WriteLine("Starting ValuationServiceAPI...");
+Console.WriteLine("Seedata...");
+
 
 var logger = NLogBuilder.ConfigureNLog("NLog.config").GetCurrentClassLogger();
 var builder = WebApplication.CreateBuilder(args);
@@ -41,6 +40,7 @@ builder.Host.UseNLog();
 
 builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddSingleton<IValuationRepository, ValuationRepository>();
+builder.Services.AddScoped<SeedData>();
 builder.Services.AddScoped<IValuationService, ValuationService>();
 builder.Services.AddScoped<IRabbitMqPublisher, RabbitMqPublisher>();
 builder.Services.AddScoped<IConditionReportPdfGenerator, ConditionReportPdfGenerator>();
@@ -51,14 +51,18 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<SeedData>();
+    await seeder.SeedAsync();
+}
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseRouting(); 
+app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
