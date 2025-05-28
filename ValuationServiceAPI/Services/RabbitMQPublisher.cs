@@ -32,6 +32,8 @@ namespace ValuationServiceAPI.Services
             var factory = new ConnectionFactory { HostName = host };
 
             int retries = 10;
+            Exception? lastException = null;
+
             for (int i = 1; i <= retries; i++)
             {
                 try
@@ -62,12 +64,14 @@ namespace ValuationServiceAPI.Services
                 }
                 catch (Exception ex)
                 {
+                    lastException = ex;
                     _logger.LogWarning(ex, "RabbitMQ ikke klar (forsøg {Attempt}/{Retries}). Prøver igen...", i, retries);
                     await Task.Delay(3000);
                 }
             }
 
             _logger.LogError("Kunne ikke publicere til RabbitMQ efter {Retries} forsøg.", retries);
+            throw lastException!; // <-- kritisk! kast videre til SeedData så den ved det fejlede
         }
     }
 }
