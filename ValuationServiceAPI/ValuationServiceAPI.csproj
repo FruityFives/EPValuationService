@@ -6,8 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyVersion>1.0.1.1</AssemblyVersion>
     <FileVersion>1.0.1.1</FileVersion>
-    <InformationalVersion>4.4.5</InformationalVersion>
+    <InformationalVersion>4.5.5</InformationalVersion>
     <Description>
+      4.5.5 updated seed data again
       4.4.5 updated RabbitMQ
       4.3.5 updated seed data logic
       4.3.4 Increased RabbitMQ retry count
