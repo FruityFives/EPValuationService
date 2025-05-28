@@ -122,7 +122,7 @@ namespace ValuationServiceAPI.SeedData
                 )
             };
 
-            const int maxAttempts = 10;
+            const int maxAttempts = 50;
 
             for (int attempt = 1; attempt <= maxAttempts; attempt++)
             {

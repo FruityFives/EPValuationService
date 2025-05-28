@@ -6,8 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyVersion>1.0.1.1</AssemblyVersion>
     <FileVersion>1.0.1.1</FileVersion>
-    <InformationalVersion>4.3.3</InformationalVersion>
+    <InformationalVersion>4.3.4</InformationalVersion>
     <Description>
+      4.3.4 Increased RabbitMQ retry count
       4.3.3 Roles updated
       4.3.2 Look in database before seeding data
       4.2.2 Retry logic for RabbitMQ
