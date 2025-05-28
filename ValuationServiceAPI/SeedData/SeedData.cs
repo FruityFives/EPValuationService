@@ -26,70 +26,122 @@ namespace ValuationServiceAPI.SeedData
                 return;
             }
 
-            var entries = new List<(string Title, string Description, string Picture, string Category)>
-    {
-        ("Antikt vægur", "Antikt vægur fra 1800-tallet", "https://example.com/vagur.jpg", "Ure"),
-        ("Retro kamera", "Vintage kamera fra 1960'erne", "https://example.com/kamera.jpg", "Elektronik"),
-        ("Oliemaleri 1923", "Oliemaleri af ukendt kunstner, 1923", "https://example.com/maleri.jpg", "Kunst")
-    };
+            var entries = new List<(ValuationRequest, ConditionReport, Assessment)>
+            {
+                (
+                    new ValuationRequest
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = Guid.NewGuid(),
+                        Description = "Antikt vægur fra 1800-tallet",
+                        Pictures = new List<string> { "https://example.com/vagur.jpg" }
+                    },
+                    new ConditionReport
+                    {
+                        ConditionReportId = Guid.NewGuid(),
+                        Title = "Rapport: Vægur",
+                        Summary = "Meget velholdt, original urværk",
+                        MaterialCondition = "Træ og messing",
+                        Functionality = "Fungerer korrekt",
+                        ComponentRemarks = "Små ridser på overflade",
+                        AuthenticityDetails = "Indgraveret initialer, verificeret ægte",
+                        Dimensions = "60x30x10 cm",
+                        ReportDate = DateTime.UtcNow,
+                        AssessedBy = "Ekspert A"
+                    },
+                    new Assessment
+                    {
+                        AssessmentId = Guid.NewGuid(),
+                        Title = "Antikt vægur",
+                        AssessmentPrice = 7500,
+                        ExpertId = Guid.NewGuid(),
+                        Picture = "https://example.com/vagur.jpg",
+                        Category = "Ure"
+                    }
+                ),
+                (
+                    new ValuationRequest
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = Guid.NewGuid(),
+                        Description = "Vintage kamera fra 1960'erne",
+                        Pictures = new List<string> { "https://example.com/kamera.jpg" }
+                    },
+                    new ConditionReport
+                    {
+                        ConditionReportId = Guid.NewGuid(),
+                        Title = "Rapport: Kamera",
+                        Summary = "Let brugt, virker stadig",
+                        MaterialCondition = "Metal og læder, små ridser",
+                        Functionality = "Fungerer som forventet",
+                        ComponentRemarks = "Original linse og taske inkluderet",
+                        AuthenticityDetails = "Serienummer matcher model",
+                        Dimensions = "15x10x7 cm",
+                        ReportDate = DateTime.UtcNow,
+                        AssessedBy = "Ekspert B"
+                    },
+                    new Assessment
+                    {
+                        AssessmentId = Guid.NewGuid(),
+                        Title = "Retro kamera",
+                        AssessmentPrice = 2200,
+                        ExpertId = Guid.NewGuid(),
+                        Picture = "https://example.com/kamera.jpg",
+                        Category = "Elektronik"
+                    }
+                ),
+                (
+                    new ValuationRequest
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = Guid.NewGuid(),
+                        Description = "Oliemaleri af ukendt kunstner, 1923",
+                        Pictures = new List<string> { "https://example.com/maleri.jpg" }
+                    },
+                    new ConditionReport
+                    {
+                        ConditionReportId = Guid.NewGuid(),
+                        Title = "Rapport: Maleri",
+                        Summary = "Pæn stand, original ramme",
+                        MaterialCondition = "Lærred og træ",
+                        Functionality = "Ikke relevant",
+                        ComponentRemarks = "Ingen synlige skader",
+                        AuthenticityDetails = "Ingen signatur, men aldersspor tydelige",
+                        Dimensions = "70x50 cm",
+                        ReportDate = DateTime.UtcNow,
+                        AssessedBy = "Ekspert C"
+                    },
+                    new Assessment
+                    {
+                        AssessmentId = Guid.NewGuid(),
+                        Title = "Oliemaleri 1923",
+                        AssessmentPrice = 11000,
+                        ExpertId = Guid.NewGuid(),
+                        Picture = "https://example.com/maleri.jpg",
+                        Category = "Kunst"
+                    }
+                )
+            };
 
             const int maxAttempts = 10;
 
-            foreach (var (title, description, picture, category) in entries)
+            foreach (var (request, report, assessment) in entries)
             {
+                assessment.ValuationRequestId = request.Id;
+                assessment.ConditionReportId = report.ConditionReportId;
+
                 for (int attempt = 1; attempt <= maxAttempts; attempt++)
                 {
                     try
                     {
-                        var requestId = Guid.NewGuid();
-                        var reportId = Guid.NewGuid();
-                        var assessmentId = Guid.NewGuid();
-                        var expertId = Guid.NewGuid();
-                        var userId = Guid.NewGuid();
-
-                        var request = new ValuationRequest
-                        {
-                            Id = requestId,
-                            UserId = userId,
-                            Description = description,
-                            Pictures = new List<string> { picture }
-                        };
-
-                        var report = new ConditionReport
-                        {
-                            ConditionReportId = reportId,
-                            Title = $"Rapport: {title}",
-                            Summary = "Standardbeskrivelse",
-                            MaterialCondition = "God stand",
-                            Functionality = "Fungerer",
-                            ComponentRemarks = "Ingen bemærkninger",
-                            AuthenticityDetails = "Verificeret",
-                            Dimensions = "Standard",
-                            ReportDate = DateTime.UtcNow,
-                            AssessedBy = "Ekspert"
-                        };
-
-                        var assessment = new Assessment
-                        {
-                            AssessmentId = assessmentId,
-                            ValuationRequestId = requestId,
-                            ConditionReportId = reportId,
-                            Title = title,
-                            AssessmentPrice = category == "Ure" ? 7500 : category == "Elektronik" ? 2200 : 11000,
-                            ExpertId = expertId,
-                            Picture = picture,
-                            Category = category
-                        };
-
                         await _valuationService.SubmitValuationRequest(request);
                         await _valuationService.SubmitFullAssessmentAsync(assessment, report);
-
-                        _logger.LogInformation("✅ Indsat: {Title}", title);
+                        _logger.LogInformation("✅ Indsat: {Title}", assessment.Title);
                         break;
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning(ex, "❌ Fejl ved indsætning af {Title} – forsøg {Attempt}/{Max}", title, attempt, maxAttempts);
+                        _logger.LogWarning(ex, "❌ Fejl ved indsætning af {Title} – forsøg {Attempt}/{Max}", assessment.Title, attempt, maxAttempts);
                         await Task.Delay(3000);
                     }
                 }
@@ -114,6 +166,5 @@ namespace ValuationServiceAPI.SeedData
             _logger.LogInformation("✅ Indsat 2 ubehandlede vurderingsanmodninger.");
             _logger.LogInformation("🎉 Seeding afsluttet.");
         }
-
     }
 }
