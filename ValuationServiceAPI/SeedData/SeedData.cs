@@ -17,6 +17,7 @@ namespace ValuationServiceAPI.SeedData
         public async Task SeedAsync()
         {
             _logger.LogInformation("Starter seeding af eksempeldata...");
+            await Task.Delay(5000); // Giv RabbitMQ tid til at starte
 
             var isEmpty = await _valuationService.IsDatabaseEmptyAsync();
             if (!isEmpty)
@@ -122,51 +123,48 @@ namespace ValuationServiceAPI.SeedData
                 )
             };
 
-            const int maxAttempts = 50;
+            const int maxAttempts = 10;
 
-            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            foreach (var (request, report, assessment) in entries)
             {
-                try
-                {
-                    foreach (var (request, report, assessment) in entries)
-                    {
-                        assessment.ValuationRequestId = request.Id;
-                        assessment.ConditionReportId = report.ConditionReportId;
+                assessment.ValuationRequestId = request.Id;
+                assessment.ConditionReportId = report.ConditionReportId;
 
+                for (int attempt = 1; attempt <= maxAttempts; attempt++)
+                {
+                    try
+                    {
                         await _valuationService.SubmitValuationRequest(request);
                         await _valuationService.SubmitFullAssessmentAsync(assessment, report);
-                        _logger.LogInformation("Indsat: {Title}", assessment.Title);
+                        _logger.LogInformation("✅ Indsat: {Title}", assessment.Title);
+                        break;
                     }
-
-                    // Ubehandlede anmodninger
-                    await _valuationService.SubmitValuationRequest(new ValuationRequest
+                    catch (Exception ex)
                     {
-                        Id = Guid.NewGuid(),
-                        UserId = Guid.NewGuid(),
-                        Description = "Ubehandlet: Gammel skrivemaskine fra 1940’erne",
-                        Pictures = new List<string> { "https://example.com/skrivemaskine.jpg" }
-                    });
-
-                    await _valuationService.SubmitValuationRequest(new ValuationRequest
-                    {
-                        Id = Guid.NewGuid(),
-                        UserId = Guid.NewGuid(),
-                        Description = "Ubehandlet: Klassisk telefon i bakelit",
-                        Pictures = new List<string> { "https://example.com/telefon.jpg" }
-                    });
-
-                    _logger.LogInformation("Indsat 2 ubehandlede vurderingsanmodninger.");
-                    _logger.LogInformation("Seeding afsluttet.");
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Forsøg {Attempt}/{Max} mislykkedes. Prøver igen om 3 sekunder...", attempt, maxAttempts);
-                    await Task.Delay(3000);
+                        _logger.LogWarning(ex, "❌ Fejl ved indsætning af {Title} – forsøg {Attempt}/{Max}", assessment.Title, attempt, maxAttempts);
+                        await Task.Delay(3000);
+                    }
                 }
             }
 
-            _logger.LogError("❌ Kunne ikke færdiggøre seeding efter {Max} forsøg.", maxAttempts);
+            await _valuationService.SubmitValuationRequest(new ValuationRequest
+            {
+                Id = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                Description = "Ubehandlet: Gammel skrivemaskine fra 1940’erne",
+                Pictures = new List<string> { "https://example.com/skrivemaskine.jpg" }
+            });
+
+            await _valuationService.SubmitValuationRequest(new ValuationRequest
+            {
+                Id = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                Description = "Ubehandlet: Klassisk telefon i bakelit",
+                Pictures = new List<string> { "https://example.com/telefon.jpg" }
+            });
+
+            _logger.LogInformation("✅ Indsat 2 ubehandlede vurderingsanmodninger.");
+            _logger.LogInformation("🎉 Seeding afsluttet.");
         }
     }
 }
