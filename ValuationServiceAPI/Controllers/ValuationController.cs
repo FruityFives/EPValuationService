@@ -28,12 +28,12 @@ namespace ValuationServiceAPI.Controllers
         }
 
         /// <summary>
-        /// Modtager en vurderingsanmodning fra en autoriseret admin-bruger.
+        /// Modtager en vurderingsanmodning fra en autoriseret user-bruger.
         /// Validerer token og sender anmodningen til serviceslaget.
         /// </summary>
         /// <param name="request">Vurderingsanmodning med nødvendige data.</param>
-        /// <returns>200 OK ved succes, 401 Unauthorized ved manglende eller ugyldige claimss.</returns>
-        [Authorize(Roles = "Admin")]
+        /// <returns>200 OK ved succes, 401 Unauthorized ved manglende eller ugyldige claims.</returns>
+        [Authorize(Roles = "User")]
         [HttpPost("valuationrequest")]
         public async Task<IActionResult> SubmitValuation([FromBody] ValuationRequest request)
         {
@@ -63,6 +63,7 @@ namespace ValuationServiceAPI.Controllers
         /// </summary>
         /// <param name="dto">Dataoverførsel med vurdering og tilstandsrapport.</param>
         /// <returns>200 OK ved succes, 400 BadRequest hvis tilstandsrapport mangler.</returns>
+        [Authorize(Roles = "Expert")]
         [HttpPost("addeffectassessment")]
         public async Task<IActionResult> SubmitAssessment([FromBody] SubmitAssessment dto)
         {
@@ -79,6 +80,7 @@ namespace ValuationServiceAPI.Controllers
         /// </summary>
         /// <param name="updatedReport">Opdateret tilstandsrapport.</param>
         /// <returns>200 OK ved succes.</returns>
+        [Authorize(Roles = "Expert")]
         [HttpPut("update/conditionreport")]
         public async Task<IActionResult> UpdateConditionReport([FromBody] ConditionReport updatedReport)
         {
@@ -91,6 +93,7 @@ namespace ValuationServiceAPI.Controllers
         /// </summary>
         /// <param name="updatedAssessment">Opdateret vurdering.</param>
         /// <returns>200 OK ved succes.</returns>
+        [Authorize(Roles = "Expert")]
         [HttpPut("update/assessment/{id}")]
         public async Task<IActionResult> UpdateAssessment(Assessment updatedAssessment)
         {
@@ -102,6 +105,7 @@ namespace ValuationServiceAPI.Controllers
         /// Henter alle vurderingsanmodninger i databasen.
         /// </summary>
         /// <returns>En liste af ValuationRequest-objekter.</returns>
+        [Authorize(Roles = "Expert")]
         [HttpGet("requests")]
         public async Task<IActionResult> GetAllValuationRequests()
         {
